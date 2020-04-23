@@ -112,15 +112,14 @@ QVariant TreeItem::data(int column) const
 //! [6]
 
 //! [7]
-bool TreeItem::insertChildren(int position, int count, int columns, QVector<QVariant> &data)
+bool TreeItem::insertChildren(int row, int count, int columns, QVector<QVariant> &data)
 {
-    if (position < 0 || position > childItems.size())
-        return false;
+
 
     for (int row = 0; row < count; ++row) {
 //        QVector<QVariant> data(columns);
         TreeItem *item = new TreeItem(data, this);
-        childItems.insert(position, item);
+        childItems.push_back(item);
     }
 
     return true;

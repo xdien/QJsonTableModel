@@ -129,8 +129,8 @@ private:
     QString m_calulatorColName;
     QJsonArray m_dataArray;
 
-    void insertNewRow(int postion, int &row, int column, const QJsonObject &jsonObject, TreeItem *parent);
-    void insertNewArray(int postion, int &row, int column, const QJsonArray &jsonArray, TreeItem *parentItem = nullptr);
+    void insertNewRow(int &row, int column, const QJsonObject &jsonObject, TreeItem *parent);
+    void insertNewArray(int row, int column, const QJsonArray &jsonArray, TreeItem *parentItem = nullptr);
 };
 //! [2]
 

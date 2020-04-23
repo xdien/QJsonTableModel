@@ -66,7 +66,7 @@ public:
     int childCount() const;
     int columnCount() const;
     QVariant data(int column) const;
-    bool insertChildren(int position, int count, int columns, QVector<QVariant> &data);
+    bool insertChildren(int row, int count, int columns, QVector<QVariant> &data);
     bool insertColumns(int position, int columns);
     TreeItem *parent();
     bool removeChildren(int position, int count);

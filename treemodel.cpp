@@ -166,36 +166,38 @@ void TreeModel::setCalulatorCol(const _calulator &calulatorCol)
 {
     m_calulatorCol = calulatorCol;
 }
-void TreeModel::insertNewRow(int postion,int &row, int column,const QJsonObject &jsonObject, TreeItem *parent){
+void TreeModel::insertNewRow(int &row, int column,const QJsonObject &jsonObject, TreeItem *parent){
 
     int i = 0;
     i=1;
 //    parent->insertChildren(parent->childNumber(),1,);
+    bool taoSubRow = false;
+    QStringList listKeyWithSubArray;
     QVector<QVariant> m_data;
     foreach(const QString key, jsonObject.keys()){
         if(jsonObject.value(key).isArray()){
-            QVector<QVariant> nm_data;
-            parent->insertChildren(0,1,0,nm_data);
-//            TreeItem *child = new TreeItem(QVector<QVariant>(2),parent);
-            TreeItem *child;
-            child = nullptr;
-            child = parent->child(0);
-            insertNewArray(parent->childCount(),row,column,jsonObject.value(key).toArray(),child);
+            taoSubRow = true;
+            listKeyWithSubArray << key;
         }else {
             m_data << jsonObject.value(key);
         }
     }
-    parent->insertChildren(0,1,0,m_data);
-    postion++;
+    bool thanhCong = parent->insertChildren(row,1,0,m_data);
+    if(listKeyWithSubArray.size()>0){
+
+        TreeItem *child;
+        child = nullptr;
+        child = parent->child(parent->childCount()-1);
+        insertNewArray(parent->childCount(),column,jsonObject.value(listKeyWithSubArray.at(0)).toArray(),child);
+    }
 }
-void TreeModel::insertNewArray(int postion, int &row, int column,const QJsonArray &jsonArray, TreeItem *parentItem){
+void TreeModel::insertNewArray(int row, int column,const QJsonArray &jsonArray, TreeItem *parentItem){
 
     foreach(const QJsonValue &jsonValue, jsonArray){
         if(jsonValue.isArray()){
-            insertNewArray(postion,row,column,jsonValue.toArray(), parentItem);
+            insertNewArray(row,column,jsonValue.toArray(), parentItem);
         }else if(jsonValue.isObject()){
-            insertNewRow(postion,row,0,jsonValue.toObject(),parentItem);
-//            row++;
+            insertNewRow(row,0,jsonValue.toObject(),parentItem);
         }
     }
 }
@@ -215,7 +217,7 @@ void TreeModel::setQuery(const QString &query_str)
 //    QString str = "[{\"bookHeavyInfo\":{\"Qty\":100},\"bookLightInfo\":{\"Qty\":2}},"
 //                  "{\"bookHeavyInfo\":[{\"a\":1},{\"a\":2}]}]";
     QString str = "["
-                  "{\"key1\": \"value1\", \"key2\":\"value2\", \"key3\":\"value3\",\"key4\":\"value4\" ,\"key5\": [{\"sub1\":\"vsub1\",\"sub2\":\"vsub2\",\"sub3\":\"vsub3\"}] },"
+                  "{\"key1\": \"value1\", \"key2\":\"value2\", \"key3\":\"value3\",\"key4\":\"value4\" ,\"key5\": [{\"sub1\":\"vsub1\",\"sub2\":\"vsub2\",\"sub3\":\"vsub3\",\"sub4arr\":[{\"sub1a\":\"vsub1a\"},{\"sub1b\":\"vsub1b\"}] }] },"
                   "{\"key1\": \"value1_2\", \"key2\":\"value2_2\", \"key3\":\"value3_2\",\"key4\":\"value4_2\"},"
                   "{\"key1\": \"value1_3\", \"key2\":\"value2_3\", \"key3\":\"value3_3\",\"key4\":\"value4_3\"},"
                   "{\"key1\": \"value1_4\", \"key2\":\"value2_4\", \"key3\":\"value3_4\",\"key4\":\"value4_4\" ,\"key5\": [{\"sub1\":\"vsub1_2\",\"sub2\":\"vsub2_2\",\"sub3\":\"vsub3_2\"}] },"
@@ -227,42 +229,9 @@ void TreeModel::setQuery(const QString &query_str)
     if(jsonResponse.isArray()){
         m_dataArray = jsonResponse.array();
         int row_ = 0;
-        insertNewArray(0,row_,0,m_dataArray,rootItem);
+        insertNewArray(row_,0,m_dataArray,rootItem);
     }
-//    lastQuery = query->lastQuery();
-//    while (query->next()) {
-//        if(query->value(m_groupByColumn)!=prevValue){//neu phat hien item moi
-//            prevValue = query->value(m_groupByColumn);
-//            //set parrent
-//            rootItem->insertChildren(postion,1,m_parentSelectList.length());
-//            child = rootItem->child(postion);
-//            for (int col = 0; col < m_parentSelectList.length(); col++) {
-//               child->setData(col,query->value(m_parentSelectList.at(col)));
-//            }
-//            //set child
-//            if(m_calulatorCol==SUM){
-//                //chua hoan thanh
-//                //if(postion>0) child->setData(m_parentSelectList)
-//                sum = query->value(m_calulatorColName).toDouble();
-//            }
-//            if(m_calulatorCol==count){
-//                count =1;
-//            }
-//            genChildData(child);
-//            postion = postion +1;
-//        }else{
-//            if(child){
-//                genChildData(child);
-//                //tinh toan
-//                if(m_calulatorCol==SUM){
-//                    sum =sum+ query->value(m_calulatorColName).toDouble();
-//                }
-//                if(m_calulatorCol==COUNT){
-//                    count++;
-//                }
-//            }
-//        }
-//    }
+
     emit dataChanged(QModelIndex(),QModelIndex());
 }
 //! [4]
