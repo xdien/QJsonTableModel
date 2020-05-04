@@ -100,7 +100,8 @@ public:
 
     int getGroupByColumn() const;
     void setGroupByColumn(int groupByColumn, Qt::SortOrder s);
-    void setQuery(const QString &query_str);
+    void setJsonArrayString(const QString *jsonArrayString);
+    bool setJsonArray(const QJsonArray *jsonArray);
     QStringList getParentSelectList() const;
     void setParentSelectList(const QString &parentSelectList);
 
@@ -124,13 +125,12 @@ private:
     QString m_statemtOrder;
     //display data
     QStringList m_parentSelectList,m_childSelectList;
-    void genChildData(TreeItem *child);
     _calulator m_calulatorCol;//if -1 nothing to do
     QString m_calulatorColName;
-    QJsonArray m_dataArray;
+    QJsonArray *m_dataArray;
 
-    void insertNewRow(int &row, int column, const QJsonObject &jsonObject, TreeItem *parent);
-    void insertNewArray(int row, int column, const QJsonArray &jsonArray, TreeItem *parentItem = nullptr);
+    bool insertNewRow(int &row, const QJsonObject &jsonObject, TreeItem *parent);
+    void insertNewArray(int row, const QJsonArray &jsonArray, TreeItem *parentItem = nullptr);
 };
 //! [2]
 

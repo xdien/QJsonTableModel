@@ -149,13 +149,6 @@ void TreeModel::setGroupByColumn(int groupByColumn, Qt::SortOrder s)
         m_statemtOrder = " order by "%QString::number(m_groupByColumn+1)%" desc ";
 }
 
-void TreeModel::genChildData(TreeItem *child)
-{
-//    child->insertChildren(child->childCount(),1,query->record().count());
-//    for (int c_col = 0; c_col < m_childSelectList.length(); c_col++) {
-//        child->child(child->childCount()-1)->setData(c_col,query->value(m_childSelectList.at(c_col)));
-//    }
-}
 
 int TreeModel::getCalulatorCol() const
 {
@@ -166,17 +159,12 @@ void TreeModel::setCalulatorCol(const _calulator &calulatorCol)
 {
     m_calulatorCol = calulatorCol;
 }
-void TreeModel::insertNewRow(int &row, int column,const QJsonObject &jsonObject, TreeItem *parent){
+bool TreeModel::insertNewRow(int &row,const QJsonObject &jsonObject, TreeItem *parent){
 
-    int i = 0;
-    i=1;
-//    parent->insertChildren(parent->childNumber(),1,);
-    bool taoSubRow = false;
     QStringList listKeyWithSubArray;
     QVector<QVariant> m_data;
     foreach(const QString key, jsonObject.keys()){
         if(jsonObject.value(key).isArray()){
-            taoSubRow = true;
             listKeyWithSubArray << key;
         }else {
             m_data << jsonObject.value(key);
@@ -184,54 +172,42 @@ void TreeModel::insertNewRow(int &row, int column,const QJsonObject &jsonObject,
     }
     bool thanhCong = parent->insertChildren(row,1,0,m_data);
     if(listKeyWithSubArray.size()>0){
-
         TreeItem *child;
         child = nullptr;
         child = parent->child(parent->childCount()-1);
-        insertNewArray(parent->childCount(),column,jsonObject.value(listKeyWithSubArray.at(0)).toArray(),child);
+        insertNewArray(parent->childCount(),jsonObject.value(listKeyWithSubArray.at(0)).toArray(),child);
     }
+    return thanhCong;
 }
-void TreeModel::insertNewArray(int row, int column,const QJsonArray &jsonArray, TreeItem *parentItem){
 
-    foreach(const QJsonValue &jsonValue, jsonArray){
+void TreeModel::insertNewArray(int row,const QJsonArray &jsonArray, TreeItem *parentItem){
+    foreach(const QJsonValue jsonValue, jsonArray){
         if(jsonValue.isArray()){
-            insertNewArray(row,column,jsonValue.toArray(), parentItem);
+            insertNewArray(row,jsonValue.toArray(), parentItem);
         }else if(jsonValue.isObject()){
-            insertNewRow(row,0,jsonValue.toObject(),parentItem);
+            insertNewRow(row,jsonValue.toObject(),parentItem);
         }
     }
 }
 
-void TreeModel::setQuery(const QString &query_str)
+void TreeModel::setJsonArrayString(const QString *jsonArrayString)
 {
-    if(rowCount()>0){
-        removeRows(0,rowCount());
-    }
-
-    QVariant prevValue;
-    int postion =0;
-    TreeItem *child;
-    child = nullptr;
-    double sum;
-    int count;
-//    QString str = "[{\"bookHeavyInfo\":{\"Qty\":100},\"bookLightInfo\":{\"Qty\":2}},"
-//                  "{\"bookHeavyInfo\":[{\"a\":1},{\"a\":2}]}]";
-    QString str = "["
-                  "{\"key1\": \"value1\", \"key2\":\"value2\", \"key3\":\"value3\",\"key4\":\"value4\" ,\"key5\": [{\"sub1\":\"vsub1\",\"sub2\":\"vsub2\",\"sub3\":\"vsub3\",\"sub4arr\":[{\"sub1a\":\"vsub1a\"},{\"sub1b\":\"vsub1b\"}] }] },"
-                  "{\"key1\": \"value1_2\", \"key2\":\"value2_2\", \"key3\":\"value3_2\",\"key4\":\"value4_2\"},"
-                  "{\"key1\": \"value1_3\", \"key2\":\"value2_3\", \"key3\":\"value3_3\",\"key4\":\"value4_3\"},"
-                  "{\"key1\": \"value1_4\", \"key2\":\"value2_4\", \"key3\":\"value3_4\",\"key4\":\"value4_4\" ,\"key5\": [{\"sub1\":\"vsub1_2\",\"sub2\":\"vsub2_2\",\"sub3\":\"vsub3_2\"}] },"
-                  "{\"key1\": \"value1_5\", \"key2\":\"value2_5\", \"key3\":\"value3_5\",\"key4\":\"value4_5\" ,\"key5\": [{\"sub1\":\"vsub1_3\",\"sub2\":\"vsub2_3\",\"sub3\":\"vsub3_3\"}] },"
-            "{\"key1\": \"value1_6\", \"key2\":\"value2_6\", \"key3\":\"value3_6\",\"key4\":\"value4_6\"},"
-            "{\"key1\": \"value1_7\", \"key2\":\"value2_7\", \"key3\":\"value3_7\",\"key4\":\"value4_7\"}"
-                  "]";
-    QJsonDocument jsonResponse = QJsonDocument::fromJson(str.toUtf8());
-    if(jsonResponse.isArray()){
-        m_dataArray = jsonResponse.array();
+    QJsonDocument *jsonResponse = new QJsonDocument(QJsonDocument::fromJson(jsonArrayString->toUtf8()));
+    if(jsonResponse->isArray()){
+        m_dataArray = new QJsonArray(jsonResponse->array());
         int row_ = 0;
-        insertNewArray(row_,0,m_dataArray,rootItem);
+        insertNewArray(row_,*m_dataArray,rootItem);
     }
+    emit dataChanged(QModelIndex(),QModelIndex());
+}
 
+bool TreeModel::setJsonArray(const QJsonArray *jsonArray)
+{
+    if(jsonArray == nullptr)
+        return false;
+    m_dataArray = new QJsonArray(*jsonArray);
+    int row_ = 0;
+    insertNewArray(row_,*m_dataArray,rootItem);
     emit dataChanged(QModelIndex(),QModelIndex());
 }
 //! [4]
@@ -241,7 +217,8 @@ QVariant TreeModel::headerData(int section, Qt::Orientation orientation,
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
         return rootItem->data(section);
-
+    if (orientation == Qt::Vertical && role == Qt::DisplayRole)
+        return  section;
     return QVariant();
 }
 
@@ -277,7 +254,7 @@ bool TreeModel::insertColumns(int position, int columns, const QModelIndex &pare
 bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent)
 {
     TreeItem *parentItem = getItem(parent);
-    bool success;
+    bool success = false;
 
     beginInsertRows(parent, position, position + rows - 1);
 //    success = parentItem->insertChildren(position, rows, rootItem->columnCount());
