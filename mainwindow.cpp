@@ -1,5 +1,5 @@
 #include "mainwindow.h"
-#include "treemodel.h"
+#include "JsonTableModel.h"
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -9,7 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     QStringList header;
     header << "h1" << "h2"<<"h3"<<"h4"<<"h5";
-    TreeModel *m_treemodel = new TreeModel(header,this);
+    JsonTableModel *m_treemodel = new JsonTableModel(header,this);
     QString str = "["
                   "{\"key1\": \"value1\", \"key2\":\"value2\", \"key3\":\"value3\",\"key4\":\"value4\" ,\"key5\": [{\"sub1\":\"vsub1\",\"sub2\":\"vsub2\",\"sub3\":\"vsub3\",\"sub4arr\":[{\"sub1a\":\"vsub1a\", \"sub1a1\":\"vsub1a1\"},{\"sub1a\":\"vsub1b\"}] }] },"
                   "{\"key1\": \"value1_2\", \"key2\":\"value2_2\", \"key3\":\"value3_2\",\"key4\":\"value4_2\"},"
@@ -20,10 +20,6 @@ MainWindow::MainWindow(QWidget *parent) :
             "{\"key1\": \"value1_7\", \"key2\":\"value2_7\", \"key3\":\"value3_7\",\"key4\":\"value4_7\"}"
                   "]";
     m_treemodel->setJsonArrayString(&str);
-
-    m_model = new JsonTableModel();
-
-    m_model->setJsonString("dasd");
     ui->tableView->setModel(m_treemodel);
     ui->treeView->setModel(m_treemodel);
 }

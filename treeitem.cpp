@@ -112,7 +112,7 @@ QVariant TreeItem::data(int column) const
 //! [6]
 
 //! [7]
-bool TreeItem::insertChildren(int row, int count, int columns, QVector<QVariant> &data)
+bool TreeItem::insertChildren(int count, QVector<QVariant> &data)
 {
     for (int row = 0; row < count; ++row) {
         TreeItem *item = new TreeItem(data, this);
@@ -120,8 +120,8 @@ bool TreeItem::insertChildren(int row, int count, int columns, QVector<QVariant>
     }
     return true;
 }
-bool TreeItem::insertChildrens(int position, int count, int columns){
-//    childItems.at(position)->insertChildren(position,1,1);
+bool TreeItem::insertChildrens(int position, int count){
+//    childItems.at(position)->insertChildren(count);
 }
 //! [7]
 

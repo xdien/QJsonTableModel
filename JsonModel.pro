@@ -28,13 +28,11 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     JsonTableModel.cpp \
-    treemodel.cpp \
     treeitem.cpp
 
 HEADERS += \
         mainwindow.h \
     JsonTableModel.h \
-    treemodel.h \
     treeitem.h
 
 FORMS += \
